@@ -1,0 +1,23 @@
+#uptime-boards{
+    border: 2px solid;
+    border-radius: 5px;
+    text-align: center;
+    margin-right: 1px;
+    margin-left: 1px;
+}
+
+#info-boards{
+    border: 2px solid;
+    border-radius: 5px;
+    text-align: center;
+    margin: 1px;
+    padding: 10px;
+}
+
+.vertical-center{
+    min-height: 100%;
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+}
