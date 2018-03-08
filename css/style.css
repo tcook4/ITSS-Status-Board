@@ -4,6 +4,7 @@
     text-align: center;
     margin-right: 1px;
     margin-left: 1px;
+    background-color: #00853E;
 }
 
 #info-boards{
@@ -12,12 +13,18 @@
     text-align: center;
     margin: 1px;
     padding: 10px;
+    background-color: #fff;
 }
 
 .vertical-center{
     min-height: 100%;
     min-height: 100vh;
+    background-color: #E5DBAE
 
     display: flex;
     align-items: center;
+}
+
+h1 {
+    background-color: #00853E;
 }
