@@ -1,84 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
-	xmlns:mulerequester="http://www.mulesoft.org/schema/mule/mulerequester" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ajax="http://www.mulesoft.org/schema/mule/ajax" xmlns:quartz="http://www.mulesoft.org/schema/mule/quartz" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
-http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
-http://www.mulesoft.org/schema/mule/mulerequester http://www.mulesoft.org/schema/mule/mulerequester/current/mule-mulerequester.xsd">
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
 
-    <http:request-config name="Zabbix-Request"  host="monitoring.untsystem.edu" port="80" doc:name="HTTP Request Configuration" basePath="zabbix"/>
-    <file:connector name="WriteConnector" writeToDirectory="C:\mule" autoDelete="false" streaming="true" validateConnections="true" doc:name="File"/>
-    <mulerequester:config name="ReadConnector" doc:name="Mule Requester"/>
-    <flow name="Init" initialState="started">
-        <poll doc:name="Poll">
-            <fixed-frequency-scheduler frequency="600" timeUnit="SECONDS"/>
-            <logger message="New loop..." level="INFO" doc:name="Logger"/>
-        </poll>
-        <set-session-variable variableName="counter" value="#[0]" doc:name="Session Variable"/>
-        <flow-ref name="WhileLoop" doc:name="Flow Reference"/>
-        <logger message="Flow finished... moving to next iteration" level="INFO" doc:name="Logger"/>
-    </flow>
-    <flow name="WhileLoop" initialState="started">
-        <poll doc:name="Poll">
-            <fixed-frequency-scheduler frequency="10" timeUnit="SECONDS" startDelay="2"/>
-            <logger message="Getting new data" level="INFO" doc:name="Logger"/>
-        </poll>
-        <choice doc:name="Choice">
-            <when expression="#[sessionVars.counter &gt; 1]">
-                <flow-ref name="getService" doc:name="Flow Reference"/>
-                <set-session-variable variableName="counter" value="#[sessionVars.counter -1]" doc:name="Session Variable"/>
-                <logger message="Got new service data, counter is now #[sessionVars.counter]" level="INFO" doc:name="Logger"/>
-            </when>
-            <otherwise>
-                <flow-ref name="getToken" doc:name="Flow Reference"/>
-                <logger message="Got new login token" level="INFO" doc:name="Logger"/>
-                <set-session-variable variableName="counter" value="#[60]" doc:name="Session Variable"/>
-                <flow-ref name="WhileLoop" doc:name="Flow Reference"/>
-            </otherwise>
-        </choice>
-    </flow>
+    <http:request-config name="ZabbixRequestConfig" host="monitoring.untsystem.edu" port="80" basePath="zabbix" doc:name="HTTP Request Configuration"/>
+    <file:connector name="WriteFile" writeToDirectory="${app.home}/ajax" autoDelete="false" streaming="true" validateConnections="true" doc:name="File"/>
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
     
-    <sub-flow name="getToken">
-        <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;user.login&quot;,     &quot;params&quot;: {         &quot;user&quot;: &quot;xxxxx&quot;,         &quot;password&quot;: &quot;xxxxxx!@#$%&quot;     },     &quot;id&quot;: 1,     &quot;auth&quot;: null }]" mimeType="application/json" doc:name="Set Login Payload"/>
-        <json:object-to-json-transformer doc:name="Convert to JSON"/>
-        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="Send to Zabbix">
+    <flow name="GetData">
+        <poll doc:name="Copy_of_Poll">
+            <fixed-frequency-scheduler frequency="30" timeUnit="SECONDS"/>
+            <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;user.login&quot;,     &quot;params&quot;: {         &quot;user&quot;: &quot;username&quot;,         &quot;password&quot;: &quot;password&quot;     },     &quot;id&quot;: 1,     &quot;auth&quot;: null }]" mimeType="application/json" doc:name="Set Login Payload"/>
+        </poll>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <http:request config-ref="ZabbixRequestConfig" path="api_jsonrpc.php" method="POST" doc:name="Copy_of_Send to Zabbix">
             <http:request-builder>
                 <http:header headerName="Content-Type" value="application/json"/>
             </http:request-builder>
         </http:request>
         <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to Map"/>
-        <set-variable variableName="token" value="#[payload.result]" doc:name="Extract auth token"/>
-        <set-payload value="#[flowVars.token]" doc:name="Set payload to token"/>
-        <file:outbound-endpoint path="C:\mule" outputPattern="auth" connector-ref="WriteConnector" responseTimeout="10000" doc:name="Write token to file"/>
-        <logger message="Wrote new auth token to file" level="INFO" doc:name="Logger"/>
-    </sub-flow>
-    
-    <sub-flow name="getService">
-        <mulerequester:request config-ref="ReadConnector" resource="file:///mule/auth" doc:name="Get File" returnClass="java.lang.String"/>
-        <set-variable variableName="temptoken" value="#[payload]" doc:name="Variable"/>
-        <logger message="got temptoken - #[flowVars.temptoken]" level="INFO" doc:name="Logger"/>
-        <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;service.get&quot;,     &quot;params&quot;: {         &quot;output&quot;: &quot;extend&quot;     },     &quot;auth&quot;:&quot;-1&quot;,     &quot;id&quot;: 1 }]" mimeType="application/json" doc:name="Set Payload"/>
-        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to Map"/>
-        <logger message="Message before auth add is #[payload]" level="INFO" doc:name="Logger"/>
-        <expression-transformer expression="#[message.payload.auth=flowVars.temptoken; message.payload]" doc:name="Set Auth"/>
-        <json:object-to-json-transformer mimeType="application/json" doc:name="Convert to JSON"/>
-        <logger message="Message after auth add is #[payload]" level="INFO" doc:name="Logger"/>
-        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="Send to Zabbix">
+        <set-variable variableName="authToken" value="#[payload.result]" doc:name="Variable"/>
+        <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;service.get&quot;,     &quot;params&quot;: {         &quot;output&quot;: &quot;extend&quot;     },     &quot;auth&quot;:&quot;-1&quot;,     &quot;id&quot;: 1 }]" doc:name="Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
+        <expression-transformer expression="#[message.payload.auth=flowVars.authToken; message.payload]" doc:name="Expression"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <http:request config-ref="ZabbixRequestConfig" path="api_jsonrpc.php" method="POST" doc:name="HTTP">
             <http:request-builder>
-                <http:query-param paramName="Content-Type" value="application/json-rpc"/>
+                <http:header headerName="Content-Type" value="application/json-rpc"/>
             </http:request-builder>
         </http:request>
         <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
-        <logger message="Reponse is #[payload.result]" level="INFO" doc:name="Logger"/>
-        <set-payload value="#[flowVars.temptoken]" doc:name="Set Payload"/>
-        <file:outbound-endpoint path="C:\mule" outputPattern="auth" connector-ref="WriteConnector" responseTimeout="10000" doc:name="File"/>
-    </sub-flow>
-
+        <set-payload value="#[payload.result]" doc:name="Set Payload"/>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <file:outbound-endpoint path="${app.home}/ajax" outputPattern="ajax" connector-ref="WriteFile" responseTimeout="10000" doc:name="File"/>
+        <logger message="Wrote new data to file" level="INFO" doc:name="Logger"/>
+    </flow>
+    
+    <flow name="ServeData">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/ajax" doc:name="HTTP"/>
+        <http:static-resource-handler resourceBase="${app.home}/ajax" defaultFile="ajax" doc:name="HTTP Static Resource Handler"/>
+    </flow>
+    
 </mule>
