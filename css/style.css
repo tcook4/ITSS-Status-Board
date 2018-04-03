@@ -1,19 +1,21 @@
-#uptime-boards{
+*[id^='uptime-boards-'] {
     border: 2px solid;
     border-radius: 5px;
     text-align: center;
     margin-right: 1px;
     margin-left: 1px;
-    background-color: #00853E;
+    background-color: #00853E
+
 }
 
-#info-boards{
+*[id^='info-boards-'] {
     border: 2px solid;
     border-radius: 5px;
     text-align: center;
     margin: 1px;
     padding: 10px;
-    background-color: #fff;
+    background-color: #fff
+
 }
 
 .vertical-center{
