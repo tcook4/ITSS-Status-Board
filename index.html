@@ -8,6 +8,31 @@
     <link rel="stylesheet" href="css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/style.css" />
 
+
+
+
+    <!-- Working Ajax call -->
+    <script>
+    $( document ).ready(function(){
+        $("button").click(function(){
+            $.ajax({
+                type: 'GET',
+                url: "http://45.55.155.214:8081/ajax",
+                crossDomain: true,
+                dataType: 'jsonp',
+                success: function (data) {
+                console.log(data);
+            },
+            error: function (data) {
+                    console.log(data)
+                }
+            });
+        });
+    });
+    </script>
+    <!--  consider putting this in the actual js folder later  -->
+
+
 </head>
 
 <body>
