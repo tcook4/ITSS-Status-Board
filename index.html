@@ -18,13 +18,16 @@
             $.ajax({
                 type: 'GET',
                 url: "http://45.55.155.214:8081/ajax",
-                crossDomain: true,
-                dataType: 'jsonp',
+                dataType: 'json',
                 success: function (data) {
                 console.log(data);
+				console.log("Success!");
+				console.log(data[0].name)
             },
             error: function (data) {
                     console.log(data)
+					console.log("error")
+					console.log('Request Status: ' + data.status + ' Status Text: ' + data.statusText + ' ' + data.responseText);
                 }
             });
         });
