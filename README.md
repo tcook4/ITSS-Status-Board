@@ -14,7 +14,7 @@ TBD
 
 ## Built With
 
-* [Zabbix](https://www.zabbix.com/documentation/2.4/manual/) - Monitoring s
+* [Zabbix](https://www.zabbix.com/documentation/2.4/manual/) - Monitoring software
 * [Mule ESB](https://www.mulesoft.com/platform/soa/mule-esb-open-source-esb/) - Enterprise Service Bus
 * [Bootstrap](https://getbootstrap.com/docs/4.0/getting-started/introduction/) - Web Framework Used
 
