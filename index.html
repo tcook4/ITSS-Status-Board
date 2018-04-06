@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -9,22 +9,33 @@
     <link rel="stylesheet" href="css/style.css" />
 
 
-
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script src="js/bootstrap.min.js"></script>
 
     <!-- Working Ajax call -->
-    <script>
+    
+	<script>
     $( document ).ready(function(){
-        $("button").click(function(){
+        $("#button1").click(function(){
             $.ajax({
                 type: 'GET',
                 url: "http://45.55.155.214:8081/ajax",
                 dataType: 'json',
                 success: function (data) {
-                console.log(data);
-				console.log("Success!");
-				console.log(data[0].name)
-            },
-            error: function (data) {
+					console.log(data);
+					console.log("Success!");
+					console.log(data[0].name);
+					
+
+					var table = $("#table tbody");
+					$.each(data, function(index, elem){
+						table.append("<tr><td>"+elem.name+"</td><td>"+elem.status+"</td></tr>");
+					});
+
+				},
+				error: function (data) {
                     console.log(data)
 					console.log("error")
 					console.log('Request Status: ' + data.status + ' Status Text: ' + data.statusText + ' ' + data.responseText);
@@ -35,29 +46,273 @@
     </script>
     <!--  consider putting this in the actual js folder later  -->
 
-
 </head>
 
 <body>
-  <h1 align="center"  style="color:white;">UNT ITSS Status Board</h1>
+	<table class="flexme" id="table" border="1">
 
-    <!--                                                                                            -->
+  <tbody>
+    <tr id="test">
+      <td></td>
+    </tr>
+   </tbody>
+</table>
+
+<!-- Title row-->
+<div class="container">
+<h1 align="center"  style="color:white;">UNT ITSS Status Board</h1>    
+
+  
+<!-- Drilldown -->
+<form action="http://45.55.155.214:8083/drilldown" method="post" target="_blank">
+  Enter a ServiceID to retrieve the aggregate services, or "drill down" <br>
+  Default ID is 99 - Central Web Services
+  ServiceID: <input type="text" name="value" value="99"><br>
+  <input type="submit" value="Submit">
+</form>
+
+
+  
+    <div class="jumbotron vertical-center">
+
+
+	<div class="container">	
+<!-- Row 1 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-1">
+				<table style='border:1px solid black;'>
+                  <font color="black">
+                    Blackbaud Raiser's Edge
+                    </font>
+					</table>
+                </div>
+                <div class="col col-md" id="uptime-boards-2">
+                  <font color="black">
+                    Business Intelligence Infrastructure
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-3">
+                  <font color="black">
+                    Campus Local Area Network
+                    </font>
+                </div>
+            </div>
+<!-- Row 2 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-4">
+                  <font color="black">
+                    Campus Technology Support Services
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-5">
+                  <font color="black">
+                    Campus Wireless Network
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-6">
+                  <font color="black">
+                    Central Web Services
+                    </font>
+                </div>
+            </div>
+<!-- Row 3 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-7">
+                  <font color="black">
+                    Constituent Relationship Management
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-8">
+                  <font color="black">
+                    Datacenter Infrastructure Services
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-9">
+                  <font color="black">
+                    Datacenter Networks
+                    </font>
+                </div>
+            </div>
+<!-- Row 4 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-10">
+                  <font color="black">
+                    Data Protection Services
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-11">
+                  <font color="black">
+                    Degree Management Systems
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-12">
+                  <font color="black">
+                    Directory Services
+                    </font>
+                </div>
+            </div>
+<!-- Row 5 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-13">
+                  <font color="black">
+                    Email Hosting for Faculty/Staff
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-14">
+                  <font color="black">
+                    Emergency Notifications
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-15">
+                  <font color="black">
+                    Financial Information Systems
+                    </font>
+                </div>
+            </div>
+<!-- Row 6 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-16">
+                  <font color="black">
+                    Human Capital Management
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-17">
+                  <font color="black">
+                    Imaging Services
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-18">
+                  <font color="black">
+                    Incident Call and Support Request Tracking
+                    </font>
+                </div>
+            </div>
+<!-- Row 7 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-19">
+                  <font color="black">
+                    Learning Management System
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-20">
+                  <font color="black">
+                    Network Firewall and VPN
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-21">
+                  <font color="black">
+                    Portal
+                    </font>
+                </div>
+            </div>
+<!-- Row 8 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-22">
+                  <font color="black">
+                    Server Provisioning
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-23">
+                  <font color="black">
+                    SharePoint
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-24">
+                  <font color="black">
+                    Student Administration Information Systems
+                    </font>
+                </div>
+            </div>
+<!-- Row 9 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-25">
+                  <font color="black">
+                    Telephone Services (UNT)
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-26">
+                  <font color="black">
+                    Telephone Services (UNTHSC)
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-27">
+                  <font color="black">
+                    Unified Messaging
+                    </font>
+                </div>
+            </div>
+<!-- Row 10 -->
+            <div class="row" id="uptime-con">
+                <div class="col col-md" id="uptime-boards-28">
+                  <font color="black">
+                    Video Conferencing Network
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-29">
+                  <font color="black">
+                    Virtualization Services
+                    </font>
+                </div>
+                <div class="col col-md" id="uptime-boards-30">
+                  <font color="black">
+                    Wide Area Network
+                    </font>
+                </div>
+            </div>
+
+			
+			<div class="row">
+				<div class="col-sm-12 text-center">
+					    <button id="button1" type="button">Enter</button>
+							<small> DYNAMICALLY PUT THE TIME THE PAGE WAS GENERATED IN HERE    </small>
+				</div>
+			</div>
+			
+        </div><!-- div class="container" -->
+    </div> <!-- div class="jumbotron vertical-center" -->
+   </div> <!-- div class="container" -->
+</body>
+
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+<body>
+  <h1 align="center"  style="color:black;">UNT ITSS Status Board</h1>
+
+                                                                                               
     <div class="jumbotron vertical-center">
     <div class="container">
 
             <div class="row" id="uptime-con">
                 <div class="col col-md" id="uptime-boards-1">
-                  <font color="white">
+                  <font color="black">
                     Network
                     </font>
                 </div>
                 <div class="col col-md" id="uptime-boards-2">
-                  <font color="white">
+                  <font color="black">
                     Storage
                     </font>
                 </div>
                 <div class="col col-md" id="uptime-boards-3">
-                  <font color="white">
+                  <font color="black">
                     Applications
                     </font>
                 </div>
@@ -66,7 +321,7 @@
             <div class="row" id="info-con">
                 <div class="col col-lg" id="info-boards-1">
                     <p>Recent Issues</p>
-                    <hr color="#343a40" >
+                    <hr color="#black" >
                     <p>Upcoming Maintenance</p>
                 </div>
 
@@ -80,12 +335,42 @@
         </div>
     </div>
    </div>
-
-
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-            crossorigin="anonymous"></script>
-    <script src="js/bootstrap.min.js"></script>
-
 </body>
-</html>
+
+
+
+<div class="container-fluid">
+  <div class='row'>
+
+      <div class="text-left col-sm-4">
+              <table style='border:1px solid black;'>
+			  <tr valign='middle'>
+			  <td style='border-radius: 5px;padding:8px'></td>
+			  <td>Blackbaud Raiser's Edge</td>
+			  </tr>
+			  </table>
+      </div>
+      
+      <div class="text-left col-sm-4">
+              <table style='border:1px solid black;'>
+			  <tr valign='middle'>
+			  <td style='border-radius: 5px;padding:8px' class='green-bg2'>
+					<i class="fa fa-check-square fa-1"></i> //need to put our own icon here
+			  </td>
+			  <td>Business Intelligence Infrastructure</td>
+			  </tr>
+			  </table>
+      </div>
+      
+      <div class="text-left col-sm-4">
+              <table style='border:1px solid black; border-spacing: 2px; border-collapse: separate;'>
+			  <tr valign='middle'><td style='border-radius: 5px;padding:8px' class='green-bg2'>
+			   <i class="fa fa-check-square fa-1"> //need to put our own icon here
+			  </i>
+			  </td>
+			  <td>Campus Local Area Network</td>
+			  </tr>
+			  </table>
+      </div>
+      </div>
+-->
