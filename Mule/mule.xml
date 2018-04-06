@@ -9,42 +9,129 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
 
-    <http:request-config name="ZabbixRequestConfig" host="monitoring.untsystem.edu" port="80" basePath="zabbix" doc:name="HTTP Request Configuration"/>
-    <file:connector name="WriteFile" writeToDirectory="${app.home}/ajax" autoDelete="false" streaming="true" validateConnections="true" doc:name="File"/>
-    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="HTTP_Request_Configuration" host="monitoring.untsystem.edu" port="80" basePath="zabbix" doc:name="HTTP Request Configuration"/>
+    <http:request-config name="Zabbix-Request"  host="monitoring.untsystem.edu" port="80" doc:name="HTTP Request Configuration" basePath="zabbix"/>
+    <file:connector name="File" outputPattern="ajax" writeToDirectory="${app.home}/ajax" autoDelete="true" streaming="true" validateConnections="true" doc:name="File"/>
+    <http:listener-config name="DefaultListener" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <http:listener-config name="TriggerListener" host="0.0.0.0" port="8082" doc:name="HTTP Listener Configuration"/>
+    <http:listener-config name="DrilldownConfig" host="0.0.0.0" port="8083" doc:name="HTTP Listener Configuration"/>
     
-    <flow name="GetData">
-        <poll doc:name="Copy_of_Poll">
-            <fixed-frequency-scheduler frequency="30" timeUnit="SECONDS"/>
+    <flow name="Main" initialState="stopped">
+        <poll doc:name="Poll">
+            <fixed-frequency-scheduler frequency="30" timeUnit="MINUTES"/>
             <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;user.login&quot;,     &quot;params&quot;: {         &quot;user&quot;: &quot;username&quot;,         &quot;password&quot;: &quot;password&quot;     },     &quot;id&quot;: 1,     &quot;auth&quot;: null }]" mimeType="application/json" doc:name="Set Login Payload"/>
         </poll>
-        <json:object-to-json-transformer doc:name="Object to JSON"/>
-        <http:request config-ref="ZabbixRequestConfig" path="api_jsonrpc.php" method="POST" doc:name="Copy_of_Send to Zabbix">
+        <json:object-to-json-transformer doc:name="Convert to JSON"/>
+        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="Send to Zabbix">
             <http:request-builder>
                 <http:header headerName="Content-Type" value="application/json"/>
             </http:request-builder>
         </http:request>
         <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to Map"/>
-        <set-variable variableName="authToken" value="#[payload.result]" doc:name="Variable"/>
-        <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;service.get&quot;,     &quot;params&quot;: {         &quot;output&quot;: &quot;extend&quot;     },     &quot;auth&quot;:&quot;-1&quot;,     &quot;id&quot;: 1 }]" doc:name="Set Payload"/>
-        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
-        <expression-transformer expression="#[message.payload.auth=flowVars.authToken; message.payload]" doc:name="Expression"/>
-        <json:object-to-json-transformer doc:name="Object to JSON"/>
-        <http:request config-ref="ZabbixRequestConfig" path="api_jsonrpc.php" method="POST" doc:name="HTTP">
+        <set-variable variableName="token" value="#[payload.result]" doc:name="Set Token"/>
+        <set-payload value="{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;service.get&quot;,     &quot;params&quot;: {         &quot;serviceids&quot;: [ &quot;229&quot;,&quot;230&quot;, &quot;393&quot;, &quot;5&quot;, &quot;231&quot;, &quot;115&quot;, &quot;99&quot;, &quot;219&quot;, &quot;233&quot;, &quot;234&quot;, &quot;88&quot;, &quot;235&quot;, &quot;424&quot;, &quot;225&quot;, &quot;217&quot;, &quot;236&quot;, &quot;238&quot;, &quot;227&quot;, &quot;94&quot;, &quot;119&quot;, &quot;223&quot;, &quot;126&quot;, &quot;101&quot;, &quot;221&quot;, &quot;239&quot;, &quot;240&quot;, &quot;625&quot;, &quot;121&quot;, &quot;242&quot;, &quot;107&quot; ]     },     &quot;auth&quot;: &quot;2ecc87c94e8c4209cc0fec696ce6f9f5&quot;,     &quot;id&quot;: 1 }" mimeType="application/json" doc:name="Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to Map"/>
+        <expression-transformer expression="#[message.payload.auth=flowVars.token; message.payload]" doc:name="Set Auth"/>
+        <json:object-to-json-transformer mimeType="application/json" doc:name="Object to JSON"/>
+        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="Send to Zabbix">
             <http:request-builder>
                 <http:header headerName="Content-Type" value="application/json-rpc"/>
             </http:request-builder>
         </http:request>
-        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to map"/>
+        <logger message="Got payload from UNT Zabbix" level="INFO" doc:name="Logger"/>
         <set-payload value="#[payload.result]" doc:name="Set Payload"/>
-        <object-to-string-transformer doc:name="Object to String"/>
-        <file:outbound-endpoint path="${app.home}/ajax" outputPattern="ajax" connector-ref="WriteFile" responseTimeout="10000" doc:name="File"/>
-        <logger message="Wrote new data to file" level="INFO" doc:name="Logger"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <file:outbound-endpoint path="${app.home}/ajax" outputPattern="ajax" connector-ref="File" responseTimeout="10000" doc:name="Write Data to File"/>
     </flow>
-    
-    <flow name="ServeData">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/ajax" doc:name="HTTP"/>
+    <sub-flow name="GetLoginToken">
+        <logger message="In login token" level="INFO" doc:name="Logger"/>
+        <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;user.login&quot;,     &quot;params&quot;: {         &quot;user&quot;: &quot;username&quot;,         &quot;password&quot;: &quot;password&quot;     },     &quot;id&quot;: 1,     &quot;auth&quot;: null }]" mimeType="application/json" doc:name="Set Login Payload"/>
+        <json:object-to-json-transformer doc:name="Convert to JSON"/>
+        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="HTTP">
+            <http:request-builder>
+                <http:header headerName="Content-Type" value="application/json"/>
+            </http:request-builder>
+        </http:request>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to Map"/>
+        <set-session-variable variableName="AuthToken" value="#[payload.result]" doc:name="Store in Session Variable"/>
+    </sub-flow>
+    <flow name="DrillDownFlow" initialState="started">
+        <http:listener config-ref="DrilldownConfig" path="/drilldown" allowedMethods="POST" doc:name="HTTP"/>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <set-variable variableName="ServiceID" value="#[payload]" doc:name="Set ServiceID"/>
+        <flow-ref name="GetLoginToken" doc:name="Get Login Token"/>
+        <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;service.get&quot;,     &quot;params&quot;: {         &quot;serviceids&quot;:  &quot;&quot;,          &quot;selectDependencies&quot;: &quot;extend&quot;     },     &quot;auth&quot;: &quot;&quot;,     &quot;id&quot;: 1 }]" doc:name="Set Payload"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to Map"/>
+        <expression-transformer expression="#[message.payload.auth=sessionVars.AuthToken; message.payload.params.serviceids=flowVars.ServiceID; message.payload]" doc:name="Set Tokens"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="HTTP">
+            <http:request-builder>
+                <http:header headerName="Content-Type" value="application/json"/>
+            </http:request-builder>
+        </http:request>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <set-payload value="#[payload.result[0]]" doc:name="Set payload to result"/>
+        <set-variable variableName="Result" value="#[new java.util.ArrayList()]" doc:name="Create list to store result"/>
+        <foreach collection="#[payload.dependencies]" doc:name="For Each - Dependency">
+            <set-variable variableName="ChildID" value="#[payload.serviceid]" doc:name="Set child serviceID"/>
+            <flow-ref name="ServiceGet" doc:name="GetService on child ID"/>
+            <set-payload value="#[payload.result[0]]" doc:name="Set payload to result"/>
+            <expression-transformer expression="#[flowVars.Result.add(payload)]" doc:name="Append result to list"/>
+        </foreach>
+        <set-payload value="#[flowVars.Result]" doc:name="Set payload to result"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <sub-flow name="ServiceGet">
+        <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;service.get&quot;,     &quot;params&quot;: {         &quot;serviceids&quot;:  &quot;&quot; },     &quot;auth&quot;: &quot;&quot;,     &quot;id&quot;: 1 }]" doc:name="Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
+        <expression-transformer expression="#[message.payload.auth=sessionVars.AuthToken; message.payload.params.serviceids=flowVars.ChildID; message.payload]" doc:name="Set Auth and ServiceID"/>
+        <json:object-to-json-transformer doc:name="Convert to JSON"/>
+        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="HTTP">
+            <http:request-builder>
+                <http:header headerName="Content-Type" value="application/json"/>
+            </http:request-builder>
+        </http:request>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
+    </sub-flow>
+    <flow name="TriggerGet">
+        <http:listener config-ref="TriggerListener" path="/" doc:name="HTTP"/>
+        <flow-ref name="GetData" doc:name="Flow Reference"/>
+        <logger message="Ok!" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="AJAXEndpoint">
+        <http:listener config-ref="DefaultListener" path="/ajax" doc:name="Listener">
+            <http:response-builder>
+                <http:header headerName="Content-Type" value="application/json"/>
+                <http:header headerName="Access-Control-Allow-Origin" value="*"/>
+            </http:response-builder>
+        </http:listener>
+        <logger message="Serving resource to request" level="INFO" doc:name="Log"/>
         <http:static-resource-handler resourceBase="${app.home}/ajax" defaultFile="ajax" doc:name="HTTP Static Resource Handler"/>
     </flow>
-    
+    <sub-flow name="GetData">
+        <set-payload value="#[{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;user.login&quot;,     &quot;params&quot;: {         &quot;user&quot;: &quot;username&quot;,         &quot;password&quot;: &quot;password&quot;     },     &quot;id&quot;: 1,     &quot;auth&quot;: null }]" mimeType="application/json" doc:name="Set Login Payload"/>
+        <json:object-to-json-transformer doc:name="Convert to JSON"/>
+        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="Send to Zabbix">
+            <http:request-builder>
+                <http:header headerName="Content-Type" value="application/json"/>
+            </http:request-builder>
+        </http:request>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to Map"/>
+        <set-variable variableName="token" value="#[payload.result]" doc:name="set Var"/>
+        <set-payload value="{     &quot;jsonrpc&quot;: &quot;2.0&quot;,     &quot;method&quot;: &quot;service.get&quot;,     &quot;params&quot;: {         &quot;serviceids&quot;: [ &quot;229&quot;,&quot;230&quot;, &quot;393&quot;, &quot;5&quot;, &quot;231&quot;, &quot;115&quot;, &quot;99&quot;, &quot;219&quot;, &quot;233&quot;, &quot;234&quot;, &quot;88&quot;, &quot;235&quot;, &quot;424&quot;, &quot;225&quot;, &quot;217&quot;, &quot;236&quot;, &quot;238&quot;, &quot;227&quot;, &quot;94&quot;, &quot;119&quot;, &quot;223&quot;, &quot;126&quot;, &quot;101&quot;, &quot;221&quot;, &quot;239&quot;, &quot;240&quot;, &quot;625&quot;, &quot;121&quot;, &quot;242&quot;, &quot;107&quot; ]     },     &quot;auth&quot;: &quot;2ecc87c94e8c4209cc0fec696ce6f9f5&quot;,     &quot;id&quot;: 1 }" mimeType="application/json" doc:name="Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to Map"/>
+        <expression-transformer expression="#[message.payload.auth=flowVars.token; message.payload]" doc:name="Set Auth"/>
+        <json:object-to-json-transformer mimeType="application/json" doc:name="Object to JSON"/>
+        <http:request config-ref="Zabbix-Request" path="api_jsonrpc.php" method="POST" doc:name="Send to Zabbix">
+            <http:request-builder>
+                <http:header headerName="Content-Type" value="application/json-rpc"/>
+            </http:request-builder>
+        </http:request>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="Convert to map"/>
+        <set-payload value="#[payload.result]" doc:name="Set Payload"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <file:outbound-endpoint path="${app.home}/ajax" outputPattern="ajax" connector-ref="File" responseTimeout="10000" doc:name="Write to File"/>
+    </sub-flow>
 </mule>
