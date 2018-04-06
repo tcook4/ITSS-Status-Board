@@ -5,6 +5,7 @@ Senior Capstone project - refresh of the UNT IT Shared Services status board usi
 ### Prerequisites
 
 Zabbix 2.4 - https://www.zabbix.com/download
+
 Mule CE 3.9 - https://developer.mulesoft.com/download-mule-esb-runtime
 
 ### Installing
