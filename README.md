@@ -23,7 +23,7 @@ TBD
 * **Tyler Cook** - *Mule / Documentation* - [GitHub](https://github.com/tcook4)
 * **Jake Schafer** - *Bootstrap* - [GitHub](https://github.com/Shaferjacob)
 * **Nick Partridge** - *API Interface* - [GitHub](https://github.com/NicholasPartridge)
-* **Cyrus Bahrami ** - *Frontend Development* - [GitHub](https://github.com/cb0313)
+* **Cyrus Bahrami** - *Frontend Development* - [GitHub](https://github.com/cb0313)
 * **Ray Williams** - *Backend Development* - [GitHub](https://github.com/)
 
 ## License
